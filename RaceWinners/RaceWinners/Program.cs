@@ -19,38 +19,46 @@ public class Program
             // Combine the ranks to print as a list
             var ranks = String.Join(", ", data[i].Ranks);
 
-            Console.WriteLine($"{data[i].Name} - [{ranks}]"); //take all of the students in each class up to the length of D class
+            Console.WriteLine($"{data[i].Name} - [{ranks}]"); 
         }
-        // Orders by the number of first-place finishes (descending) and then by name (ascending)
-        // take whichever class has the most high placing students
+        // take all of the students in each class up to the length of D class, which has 17 students
+        // therefore we take the first 17 students from each class
+        // to determine the winner we'll take the class with the highest average rank
         var winner = data
-            .OrderByDescending(x => x.Ranks.Count(r => r == 1))
-            .ThenBy(x => x.Name)
-            .First();
+            .Select(g => new Student 
+            { 
+                Name = g.Name, 
+                Ranks = g.Ranks.Take(17).ToList() 
+            })
+            .OrderBy(s => s.Ranks.Average())
+            .Last();
+        // now that the winner is determined, print out the winning class and average rank of the other classes in descending order
+        Console.WriteLine($"\nThe winning class is {winner.Name} with an average rank of {winner.Ranks.Average():F2}.\n");
+        Console.WriteLine("\nThis was determined by getting the average rank of the first 17 students. All 4 classes' ranks were determined this way.");
+        Console.WriteLine("\nOther classes in order:");
+        // get the other classes in order of average rank descending
+        var otherClasses = data
+            .Where(g => g.Name != winner.Name)
+            .Select(g => new Student 
+            { 
+                Name = g.Name, 
+                Ranks = g.Ranks.Take(17).ToList() 
+            })
+            .OrderByDescending(s => s.Ranks.Average());
 
-        Console.WriteLine($"\n Winner : {winner.Name}");
+        foreach (var s in otherClasses) 
+        {             
+            Console.WriteLine($"{s.Name} - Average Rank: {s.Ranks.Average():F2}");
+        }
 
-        public class Student
+
+    }
+
+    public class Student
     {
         public string Name { get; set; }
         public List<int> Ranks { get; set; }
     }
 
-    // Simulated "DataService" class
-    public class DataService
-    {
-        public async Task<List<Student>> GetGroupRanksAsync()
-        {
-            // Simulate async operation
-            await Task.Delay(100);
-
-            // Return mock data
-            return new List<Student>
-            {
-                new Student { Name = "Alice", Ranks = new List<int> { 1, 2, 1 } },
-                new Student { Name = "Bob", Ranks = new List<int> { 2, 1, 3 } },
-                new Student { Name = "Charlie", Ranks = new List<int> { 3, 3, 2 } }
-            }
-        }
-    }
+    
 }
